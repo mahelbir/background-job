@@ -54,9 +54,9 @@ export class BackgroundJob {
 
     /**
      * Disables this job and optionally suspends it for a cooldown period.
-     * @param {number} [suspendDurationMs=3000] - Cooldown in ms before the job may run again; 0 disables without suspending
+     * @param {number} [suspendDurationMs=5000] - Cooldown in ms before the job may run again; 0 disables without suspending
      */
-    disable(suspendDurationMs = 3000) {
+    disable(suspendDurationMs = 5000) {
         this.runner.disableJob(this.id);
         suspendDurationMs && this.runner.suspendJob(this.id, suspendDurationMs);
     }

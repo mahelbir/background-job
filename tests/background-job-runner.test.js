@@ -37,7 +37,7 @@ describe('BackgroundJobRunner.isJobEnabled / isJobRunning', () => {
     test('isJobRunning reflects the runningJobs map', () => {
         const runner = makeRunner();
         assert.equal(runner.isJobRunning('a'), false);
-        runner.runningJobs['a'] = {};
+        runner.runningJobs['a'] = /** @type {any} */ ({});
         assert.equal(runner.isJobRunning('a'), true);
     });
 });

@@ -2,6 +2,11 @@ import {describe, test} from 'node:test';
 import assert from 'node:assert/strict';
 import {BackgroundJob} from '../src/index.js';
 
+/**
+ * Minimal BackgroundJobRunner stub for unit-testing BackgroundJob in isolation.
+ * @param {string} [baseName]
+ * @returns {any}
+ */
 function makeFakeRunner(baseName = 'Worker') {
     return {
         baseName,
@@ -73,12 +78,12 @@ describe('BackgroundJob.isEnabled', () => {
 });
 
 describe('BackgroundJob.disable', () => {
-    test('default suspend duration is 3000ms', () => {
+    test('default suspend duration is 5000ms', () => {
         const runner = makeFakeRunner();
         const job = new BackgroundJob(runner, 5);
         job.disable();
         assert.deepEqual(runner.calls.disableJob, [5]);
-        assert.deepEqual(runner.calls.suspendJob, [{id: 5, duration: 3000}]);
+        assert.deepEqual(runner.calls.suspendJob, [{id: 5, duration: 5000}]);
     });
 
     test('custom suspend duration is forwarded', () => {
