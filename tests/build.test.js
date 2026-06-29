@@ -32,12 +32,4 @@ describe("build artifacts", () => {
             );
         }
     });
-
-    // If the public API is deterministic (e.g. seeded), uncomment and adapt:
-    //
-    // test("ESM and CJS produce identical seeded output", {skip: skipReason}, () => {
-    //     for (const seed of [0, 1, 42, "abc"]) {
-    //         assert.deepEqual(esm.someFunction({seed}), cjs.someFunction({seed}));
-    //     }
-    // });
 });

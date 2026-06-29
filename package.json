@@ -4,16 +4,11 @@
   "private": false,
   "description": "Managed background jobs for Node.js — suspension, disabling, and controlled execution loops.",
   "keywords": [
-    "background-job",
-    "background",
-    "job",
-    "jobs",
     "worker",
     "runner",
     "scheduler",
     "task",
-    "queue",
-    "esm"
+    "queue"
   ],
   "homepage": "https://github.com/mahelbir/background-job#readme",
   "bugs": "https://github.com/mahelbir/background-job/issues",
@@ -41,10 +36,10 @@
     "relock": "rm -rf node_modules package-lock.json && NODE_ENV= npm install --include=dev --include=optional"
   },
   "dependencies": {
-    "melperjs": "^17.1.1"
+    "melperjs": "^17.2.0"
   },
   "devDependencies": {
-    "tsdown": "^0.22.2"
+    "tsdown": "^0.22.3"
   },
   "engines": {
     "node": ">=18.0.0"

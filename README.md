@@ -1,4 +1,4 @@
-# background-job
+# Background Job
 
 [![npm version](https://img.shields.io/npm/v/background-job.svg)](https://www.npmjs.com/package/background-job)
 
