@@ -2,7 +2,9 @@
 
 [![npm version](https://img.shields.io/npm/v/background-job.svg)](https://www.npmjs.com/package/background-job)
 
-Managed background jobs for Node.js. Provides suspension, disabling, and controlled execution loops for long-running worker processes.
+Managed background jobs for Node.js. Provides suspension, disabling, and controlled execution loops for long-running
+worker processes.
+
 ## Installation
 
 ```bash
@@ -130,13 +132,13 @@ Orchestrator that owns enabled/running/suspended state per job id.
 
 The object returned (per job) by `getExecutableJobs()`:
 
-| Field         | Type                   | Description                                                                                                                                                       |
-|---------------|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `id`          | `string \| number`     | Unique job identifier.                                                                                                                                            |
-| `jobClass`    | `typeof BackgroundJob` | The `BackgroundJob` subclass to instantiate.                                                                                                                      |
-| `initParams`  | `*`                    | Optional — passed to the job's `init()`.                                                                                                                          |
-| `delayMs`     | `number`               | Optional (default `0`) — delay between executions in ms.                                                                                                          |
-| `isFixedRate` | `boolean`              | Optional (default `false`) — when `true`, execute time counts toward the delay (fixed-rate); otherwise the full delay is waited after each execute (fixed-delay). |
+| Field          | Type                   | Description                                                                                                                                                          |
+|----------------|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `id`           | `string \| number`     | Unique job identifier.                                                                                                                                               |
+| `jobClass`     | `typeof BackgroundJob` | The `BackgroundJob` subclass to instantiate.                                                                                                                         |
+| `initParams`   | `*`                    | Optional — passed to the job's `init()`.                                                                                                                             |
+| `delayMs`      | `number`               | Optional (default `0`) — delay between executions in ms.                                                                                                             |
+| `isFixedDelay` | `boolean`              | Optional (default `true`) — when `true`, the full delay is waited after each execute (fixed-delay); when `false`, execute time counts toward the delay (fixed-rate). |
 
 ## License
 

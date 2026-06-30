@@ -8,7 +8,7 @@ import {notImplemented} from "./utils.js";
  * @property {typeof import("./background-job.js").BackgroundJob} jobClass - BackgroundJob subclass constructor
  * @property {*} [initParams] - Parameters passed to init()
  * @property {number} [delayMs=0] - Delay between executions in ms
- * @property {boolean} [isFixedRate=false] - When true, execute time counts toward the delay (fixed-rate); otherwise the full delay is waited after each execute (fixed-delay)
+ * @property {boolean} [isFixedDelay=true] - When true (default), the full delay is waited after each execute (fixed-delay); when false, execute time counts toward the delay (fixed-rate)
  */
 
 /**
@@ -77,6 +77,7 @@ export class BackgroundJobRunner {
      */
     async _startJob(definition) {
         definition.delayMs = definition.delayMs || 0;
+        definition.isFixedDelay = definition.isFixedDelay !== false;
         const id = definition.id;
         if (!this.runningJobs[id]) {
             this.runningJobs[id] = new definition.jobClass(this, id);
@@ -91,13 +92,13 @@ export class BackgroundJobRunner {
                 console.error(`[${ref.name}] error`, e);
             }
             if (definition.delayMs > 0) {
-                if (definition.isFixedRate) {
+                if (definition.isFixedDelay) {
+                    await sleepMs(definition.delayMs);
+                } else {
                     const remaining = definition.delayMs - (Date.now() - startTime);
                     if (remaining > 0) {
                         await sleepMs(remaining);
                     }
-                } else {
-                    await sleepMs(definition.delayMs);
                 }
             }
         }
@@ -149,16 +150,16 @@ export class BackgroundJobRunner {
      * Builds a list of identical job definitions with sequential 1-based ids.
      * @param {number} count - Number of definitions to generate
      * @param {typeof import("./background-job.js").BackgroundJob} jobClass - BackgroundJob subclass to use for every definition
-     * @param {{initParams?: *, delayMs?: number, isFixedRate?: boolean}} [options] - Shared options applied to every definition
+     * @param {{initParams?: *, delayMs?: number, isFixedDelay?: boolean}} [options] - Shared options applied to every definition
      * @returns {BackgroundJobDefinition[]}
      */
-    static iteratingJobList(count, jobClass, {initParams = null, delayMs = 0, isFixedRate = false} = {}) {
+    static iteratingJobList(count, jobClass, {initParams = null, delayMs = 0, isFixedDelay = true} = {}) {
         return Array.from({length: count}, (_, i) => ({
             id: i + 1,
             jobClass,
             initParams,
             delayMs,
-            isFixedRate
+            isFixedDelay
         }));
     }
 

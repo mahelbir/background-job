@@ -91,21 +91,21 @@ describe('BackgroundJobRunner.iteratingJobList', () => {
             assert.equal(def.jobClass, NoopJob);
             assert.equal(def.initParams, null);
             assert.equal(def.delayMs, 0);
-            assert.equal(def.isFixedRate, false);
+            assert.equal(def.isFixedDelay, true);
         }
     });
 
-    test('forwards initParams, delayMs, and isFixedRate', () => {
+    test('forwards initParams, delayMs, and isFixedDelay', () => {
         const list = BackgroundJobRunner.iteratingJobList(2, NoopJob, {
             initParams: {x: 1},
             delayMs: 250,
-            isFixedRate: true,
+            isFixedDelay: false,
         });
         assert.equal(list.length, 2);
         for (const def of list) {
             assert.deepEqual(def.initParams, {x: 1});
             assert.equal(def.delayMs, 250);
-            assert.equal(def.isFixedRate, true);
+            assert.equal(def.isFixedDelay, false);
         }
     });
 
@@ -223,7 +223,7 @@ describe('BackgroundJobRunner._startJob loop', () => {
         assert.equal('x' in runner.runningJobs, false);
     });
 
-    test('with isFixedRate=true, total time is bounded by N * delay', async () => {
+    test('with isFixedDelay=false, total time is bounded by N * delay', async () => {
         const executeMs = 30;
         const delay = 80;
         const iterations = 3;
@@ -241,14 +241,14 @@ describe('BackgroundJobRunner._startJob loop', () => {
         const runner = makeRunner();
         runner.enabledJobs[1] = true;
         const start = Date.now();
-        await runner._startJob({id: 1, jobClass: SlowJob, delayMs: delay, isFixedRate: true});
+        await runner._startJob({id: 1, jobClass: SlowJob, delayMs: delay, isFixedDelay: false});
         const elapsed = Date.now() - start;
 
         assert.ok(elapsed >= iterations * executeMs, `elapsed=${elapsed} should be >= ${iterations * executeMs}`);
         assert.ok(elapsed < iterations * (delay + executeMs), `elapsed=${elapsed} should be < ${iterations * (delay + executeMs)} (would mean delay was added on top of execute)`);
     });
 
-    test('default mode (isFixedRate unspecified) behaves as false — sleeps full delay', async () => {
+    test('default mode (isFixedDelay unspecified) behaves as true — sleeps full delay', async () => {
         const executeMs = 20;
         const delay = 60;
         const iterations = 3;
@@ -266,7 +266,7 @@ describe('BackgroundJobRunner._startJob loop', () => {
         const runner = makeRunner();
         runner.enabledJobs[1] = true;
         const start = Date.now();
-        // Note: no isFixedRate passed — should default to false.
+        // Note: no isFixedDelay passed — should default to true.
         await runner._startJob({id: 1, jobClass: SlowJob, delayMs: delay});
         const elapsed = Date.now() - start;
 
@@ -274,7 +274,7 @@ describe('BackgroundJobRunner._startJob loop', () => {
         assert.ok(elapsed >= minExpected, `elapsed=${elapsed} should be >= ${minExpected} (default must be false-mode)`);
     });
 
-    test('with isFixedRate=false, sleeps the full delay after each execute', async () => {
+    test('with isFixedDelay=true, sleeps the full delay after each execute', async () => {
         const executeMs = 20;
         const delay = 60;
         const iterations = 3;
@@ -292,7 +292,7 @@ describe('BackgroundJobRunner._startJob loop', () => {
         const runner = makeRunner();
         runner.enabledJobs[1] = true;
         const start = Date.now();
-        await runner._startJob({id: 1, jobClass: SlowJob, delayMs: delay, isFixedRate: false});
+        await runner._startJob({id: 1, jobClass: SlowJob, delayMs: delay, isFixedDelay: true});
         const elapsed = Date.now() - start;
 
         // Expect roughly iterations * (executeMs + delay), with the final delay also waited.
