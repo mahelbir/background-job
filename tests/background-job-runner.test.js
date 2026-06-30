@@ -1,7 +1,7 @@
 import {describe, test} from 'node:test';
 import assert from 'node:assert/strict';
 import {sleepMs} from 'melperjs';
-import {BackgroundJob, BackgroundJobRunner} from '../src/index.js';
+import {BackgroundJob, BackgroundJobRunner, BackgroundJobDefinitionError} from '../src/index.js';
 
 function makeRunner(name) {
     return name === undefined ? new BackgroundJobRunner() : new BackgroundJobRunner(name);
@@ -321,5 +321,78 @@ describe('BackgroundJobRunner._startJob loop', () => {
 
         assert.equal(executes, 50);
         assert.ok(elapsed < 200, `elapsed=${elapsed} should be small with delay=0`);
+    });
+});
+
+describe('BackgroundJobRunner._validateJobs', () => {
+    class ValidJob extends BackgroundJob {
+        async execute() {
+        }
+    }
+
+    test('accepts unique ids with a BackgroundJob subclass', () => {
+        const runner = makeRunner();
+        assert.doesNotThrow(() => runner._validateJobs([
+            {id: 1, jobClass: ValidJob},
+            {id: 'a', jobClass: ValidJob},
+        ]));
+    });
+
+    test('accepts BackgroundJob itself as jobClass', () => {
+        const runner = makeRunner();
+        assert.doesNotThrow(() => runner._validateJobs([{id: 1, jobClass: BackgroundJob}]));
+    });
+
+    test('accepts id 0 (not treated as missing)', () => {
+        const runner = makeRunner();
+        assert.doesNotThrow(() => runner._validateJobs([{id: 0, jobClass: ValidJob}]));
+    });
+
+    test('throws BackgroundJobDefinitionError when an id is missing or null', () => {
+        const runner = makeRunner();
+        assert.throws(() => runner._validateJobs([{jobClass: ValidJob}]), BackgroundJobDefinitionError);
+        assert.throws(() => runner._validateJobs([{id: null, jobClass: ValidJob}]), BackgroundJobDefinitionError);
+    });
+
+    test('throws BackgroundJobDefinitionError on duplicate ids', () => {
+        const runner = makeRunner();
+        assert.throws(() => runner._validateJobs([
+            {id: 1, jobClass: ValidJob},
+            {id: 1, jobClass: ValidJob},
+        ]), BackgroundJobDefinitionError);
+    });
+
+    test('treats numeric and string ids that collide as duplicates', () => {
+        const runner = makeRunner();
+        // 1 and "1" resolve to the same runner map key, so they are duplicates.
+        assert.throws(() => runner._validateJobs([
+            {id: 1, jobClass: ValidJob},
+            {id: '1', jobClass: ValidJob},
+        ]), BackgroundJobDefinitionError);
+    });
+
+    test('throws BackgroundJobDefinitionError when jobClass is not a BackgroundJob subclass', () => {
+        const runner = makeRunner();
+        assert.throws(() => runner._validateJobs([{id: 1, jobClass: class NotAJob {
+        }}]), BackgroundJobDefinitionError);
+        assert.throws(() => runner._validateJobs([{id: 1, jobClass: undefined}]), BackgroundJobDefinitionError);
+        assert.throws(() => runner._validateJobs([{id: 1, jobClass: {}}]), BackgroundJobDefinitionError);
+    });
+});
+
+describe('BackgroundJobRunner.executeJobs', () => {
+    test('re-throws BackgroundJobDefinitionError so it is not swallowed by the loop', async () => {
+        const runner = makeRunner();
+        runner.getExecutableJobs = async () => [{id: 1, jobClass: class NotAJob {
+        }}];
+
+        const originalError = console.error;
+        console.error = () => {
+        };
+        try {
+            await assert.rejects(runner.executeJobs(10), BackgroundJobDefinitionError);
+        } finally {
+            console.error = originalError;
+        }
     });
 });

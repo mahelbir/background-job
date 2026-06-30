@@ -1,5 +1,6 @@
 import {forever, randomInteger, sleepMs} from "melperjs";
-import {notImplemented} from "./utils.js";
+import {BackgroundJob} from "./background-job.js";
+import {notImplemented, BackgroundJobDefinitionError} from "./utils.js";
 
 
 /**
@@ -76,7 +77,7 @@ export class BackgroundJobRunner {
      * @returns {Promise<void>}
      */
     async _startJob(definition) {
-        definition.delayMs = definition.delayMs || 0;
+        definition.delayMs = Number.isFinite(definition.delayMs) ? Math.max(0, definition.delayMs) : 0;
         definition.isFixedDelay = definition.isFixedDelay !== false;
         const id = definition.id;
         if (!this.runningJobs[id]) {
@@ -107,6 +108,31 @@ export class BackgroundJobRunner {
     }
 
     /**
+     * Validates the job definitions from {@link BackgroundJobRunner#getExecutableJobs},
+     * rejecting a missing or duplicate id or a jobClass that is not a BackgroundJob subclass.
+     * @private
+     * @param {BackgroundJobDefinition[]} jobs - Definitions to validate
+     * @returns {void}
+     * @throws {BackgroundJobDefinitionError} When a definition is invalid
+     */
+    _validateJobs(jobs) {
+        const seenIds = new Set();
+        for (const job of jobs) {
+            if (job.id === undefined || job.id === null) {
+                throw new BackgroundJobDefinitionError(`[${this.name}] a job definition is missing an id`);
+            }
+            const key = String(job.id);
+            if (seenIds.has(key)) {
+                throw new BackgroundJobDefinitionError(`[${this.name}] duplicate job id "${job.id}"`);
+            }
+            seenIds.add(key);
+            if (typeof job.jobClass !== "function" || (job.jobClass !== BackgroundJob && !(job.jobClass.prototype instanceof BackgroundJob))) {
+                throw new BackgroundJobDefinitionError(`[${this.name}] job "${job.id}" has an invalid jobClass; expected a BackgroundJob subclass`);
+            }
+        }
+    }
+
+    /**
      * Runs the main loop: periodically refreshes the executable job set, lifts
      * expired suspensions, and starts any enabled job that is not already running.
      * @param {number} [pollIntervalMs=1000] - Interval in ms between job status checks
@@ -115,6 +141,7 @@ export class BackgroundJobRunner {
     async executeJobs(pollIntervalMs = 1000) {
         await forever(pollIntervalMs, async () => {
             const jobs = await this.getExecutableJobs();
+            this._validateJobs(jobs);
             this.enabledJobs = {};
             for (const job of jobs) {
                 const id = job.id;
@@ -134,6 +161,9 @@ export class BackgroundJobRunner {
                 }
             }
         }, (e) => {
+            if (e instanceof BackgroundJobDefinitionError) {
+                throw e;
+            }
             console.error(`[${this.name}] error`, e);
         });
     }
