@@ -37,10 +37,10 @@
     "relock": "rm -rf node_modules package-lock.json && NODE_ENV= npm install --include=dev --include=optional"
   },
   "dependencies": {
-    "melperjs": "^17.2.0"
+    "melperjs": "^17.4.0"
   },
   "devDependencies": {
-    "tsdown": "^0.22.3"
+    "tsdown": "^0.22.14"
   },
   "engines": {
     "node": ">=18.0.0"
