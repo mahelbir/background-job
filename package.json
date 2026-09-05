@@ -2,7 +2,7 @@
   "name": "background-job",
   "version": "2.0.0",
   "private": false,
-  "description": "Managed background jobs for Node.js — suspension, disabling, and controlled execution loops.",
+  "description": "Managed background jobs with controlled execution loops and per-job enabling, disabling, suspension, and cooldown for long-running workers.",
   "keywords": [
     "worker",
     "runner",
@@ -19,6 +19,7 @@
   "license": "MIT",
   "author": "Mahmuthan Elbir <me@mahmuthanelbir.com.tr>",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/index.mjs",

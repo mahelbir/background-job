@@ -1,9 +1,10 @@
 # Background Job
 
 [![npm version](https://img.shields.io/npm/v/background-job.svg)](https://www.npmjs.com/package/background-job)
+[![license](https://img.shields.io/npm/l/background-job.svg)](LICENSE)
 
-Managed background jobs for Node.js. Provides suspension, disabling, and controlled execution loops for long-running
-worker processes.
+Managed background jobs with controlled execution loops and per-job enabling, disabling, suspension, and cooldown for
+long-running workers.
 
 ## Installation
 
@@ -140,6 +141,7 @@ The object returned (per job) by `getExecutableJobs()`:
 | `delayMs`      | `number`               | Optional (default `0`) — delay between executions in ms.                                                                                                             |
 | `isFixedDelay` | `boolean`              | Optional (default `true`) — when `true`, the full delay is waited after each execute (fixed-delay); when `false`, execute time counts toward the delay (fixed-rate). |
 
-## License
+## Support
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+If this project helps you, please consider giving it a [Star ⭐️](https://github.com/mahelbir/background-job) on GitHub.
+This will encourage us to continue developing and maintaining this project.
